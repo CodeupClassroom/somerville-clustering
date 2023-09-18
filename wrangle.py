@@ -33,9 +33,13 @@ def acquire_mall() -> pd.DataFrame:
     
     return: a single pandas dataframe
     '''
+    # checking if the path to a cached version of mall data exists
     if os.path.exists('mall_data.csv'):
+        # if it does, read it in
         df = pd.read_csv('mall_data.csv')
     else:
+        # else, we make a very basic select statement from mall_customers
+        # which only contains one table, called customers
         query = 'SELECT * FROM customers'
         url = get_url('mall_customers')
         df = pd.read_sql(query, url)
@@ -55,7 +59,6 @@ def acquire_zillow() -> pd.DataFrame:
     if os.path.exists('zillow_data.csv'):
         df = pd.read_csv('zillow_data.csv')
     else:
-        query = 'SELECT * FROM customers'
         url = get_url('zillow')
         df = pd.read_sql(zquery, url)
         df.to_csv('zillow_data.csv', index=False)
@@ -90,6 +93,7 @@ def get_fences(df, col, k=1.5) -> (float, float):
     
     return: lower_bound and upper_bound, two floats
     '''
+    # df.describe['.75']
     q3 = df[col].quantile(0.75)
     q1 = df[col].quantile(0.25)
     iqr = q3 - q1
@@ -203,7 +207,13 @@ def prep_mall(df) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
     # preprocessing:
     #make a scaler:
     scaler = MinMaxScaler()
+    # scaled_cols is a variable that is holding a list
+    # of all of my column names but concatenated with a 
+    #_scaled at the end of it
+    # which will hold the values for the columns
+    # that I create with the transformation of my scaler
     scaled_cols = [col + '_scaled' for col in num_cols]
+    # first step, make that scaler and fit it on the trian
     train[scaled_cols] = scaler.fit_transform(train[num_cols])
     validate[scaled_cols] = scaler.transform(validate[num_cols])
     test[scaled_cols] = scaler.transform(test[num_cols])
@@ -223,6 +233,10 @@ def handle_missing_values(df,
     Utilizing an input proportion for the column and rows of DataFrame df,
     drop the missing values per the axis contingent on the amount of data present.
     '''
+    prop_missing_col = 1 - prop_required_col 
+    # multiply the axis with with the appropriate ratio
+    # this will return the number of rows that we want to reference
+    # for our dropna function
     n_required_column = round(df.shape[0] * prop_required_column)
     df = df.dropna(axis=1, thresh=n_required_column)
     n_required_row = round(df.shape[1] * prop_required_row)
@@ -287,7 +301,7 @@ def wrangle_zillow(summarization=True,
     return: train, validate, and test data sets with scaled numeric information
     '''
     if summarization:
-        summarize(acquire_mall(), k=k)
+        summarize(acquire_zillow(), k=k)
     train, validate, test = prep_zillow(
         acquire_zillow(),
         prop_required_column=prop_required_column,
