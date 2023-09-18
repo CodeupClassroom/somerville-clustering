@@ -233,7 +233,7 @@ def handle_missing_values(df,
     Utilizing an input proportion for the column and rows of DataFrame df,
     drop the missing values per the axis contingent on the amount of data present.
     '''
-    prop_missing_col = 1 - prop_required_col 
+    prop_missing_col = 1 - prop_required_column
     # multiply the axis with with the appropriate ratio
     # this will return the number of rows that we want to reference
     # for our dropna function
